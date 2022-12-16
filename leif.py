@@ -1,29 +1,50 @@
+# FRÅGA JOHANNES OM HJÄLP MED ATT VÄLJA VAPEN I BÖRJAN AV STRID
+# 
+# 
+# IMPORTS
 import os
 import time
-
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# KLASSER
 class Spelare:
-  def __init__(self, hp, dmg, rustning, mynt):
+  def __init__(self, hp, max_hp, dmg, rustning, pengar, ryggsäck):
     self.hp = hp
+    self.max_hp = max_hp
     self.dmg = dmg
     self.rustning =  rustning
-    self.mynt = mynt
-
+    self.pengar = pengar
+    self.ryggsäck = [Vapen("svärd", 10, 1)] 
+    
 class Monster:
-  def __init__(self, namn, hp, dmg, rustning, svaghet, utseende):
+  def __init__(self, namn, hp, max_hp, dmg, rustning, svaghet, värde, liv, utseende):
     self.namn = namn
     self.hp = hp
+    self.max_hp = max_hp
     self.dmg = dmg
     self.rustning = rustning
     self.svaghet = svaghet
+    self.värde = värde
+    self.liv = liv
     self.utseende = utseende
 
-# class Vapen:
-#   def __init__(self, namn, dmg):
-#     self.namn = namn
-#     self.dmg = dmg
+class Vapen:
+  def __init__(self, namn, dmg, mängd):
+    self.namn = namn
+    self.dmg = dmg
+    self.mängd = mängd
 
+class Föremål:
+  def __init__(self, namn, healing, dmg):
+    self.namn = namn
+    self.healing = healing
+    self.dmg = dmg
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# FUNKTIONER
+def läggtill_i_ryggsäck(spelare, sak): 
+  spelare.ryggsäck.append(sak)
+  
 
-def strid(monster, spelare, namn): #DETTA ÄR STRIDSFUNKTIONEN SOM ANVÄNDER 
+def strid(monster, spelare, namn): #DETTA ÄR STRIDSFUNKTIONEN
   print("tryck enter för att fortsätta...")
   while spelare.hp > 0 and monster.hp > 0:
     while True:
@@ -33,6 +54,11 @@ def strid(monster, spelare, namn): #DETTA ÄR STRIDSFUNKTIONEN SOM ANVÄNDER
     \n A wild {monster.namn} appears!
     {monster.utseende}
     ''')
+      print("VÄLJ VAPEN")
+      for sak in spelare.ryggsäck:
+        if type(sak) == Vapen:
+          print(f"1. {sak.namn}")
+
       print("-----------------------------\n1 SLÅSS --- 2 FLY --- 3 PRATA\n-----------------------------")
       print(f"{monster.namn} har {monster.hp} HP och {monster.dmg} DMG\n")
       print(f"{namn} har {spelare.hp} HP och {spelare.dmg} DMG")
@@ -69,13 +95,13 @@ def strid(monster, spelare, namn): #DETTA ÄR STRIDSFUNKTIONEN SOM ANVÄNDER
             elif spelare.hp <= 0:
               print(f"{namn} ÄR DÖD")
               print("1 JA --- 2 NEJ\n")
-              omstart = input("Vill du börja om?")
+              omstart = input("Vill du börja om denna strid?")
               if omstart == "1":
-                monster.hp = 20
-                spelare.hp = 25
+                monster.hp = monster.max_hp
+                spelare.hp = spelare.max_hp
                 strid(monster,spelare,namn)
               elif omstart == "2":
-                break
+                skid(monster, spelare, namn)
               else:
                 print("Välj ett giltigt nummer")
             
@@ -100,42 +126,40 @@ def strid(monster, spelare, namn): #DETTA ÄR STRIDSFUNKTIONEN SOM ANVÄNDER
           svar = input("Accepterar du hans erbjudande?")
           if svar == "1":
             print("Leif springer kvickt bort och lämnar dig med 10 guldmynt")
-            spelare.mynt += 10
-            print(f"Du har nu {spelare.mynt} guldmynt")
+            return
           elif svar == "2":
             print("snorre")
       else:
-            print("Välj ett giltigt nummer")
+            print("Välj ett giltigt nummer")            
 
-def skid(spelare):
-  print("------------------------------------------------\n1 FORTSÄTT RESAN --- 2 RYGGSÄCK --- 3 REGELBOKEN\n------------------------------------------------")
-  svar = input("vad vill du göra?")
-  if svar == "1": 
-    print("1 SHOPPEN --- 2 LÄGRET --- 3 ")
-    print("Var vill du gå?")
-  elif svar == "2": 
-    print(f"Ditt inventory: ")
-  elif svar == "3":
-    print("--- REGLER OCH INSTRUKTIONER ---")
-    print("1. Klicka enter för att forstätta dialog/funktioner \n2. Var inte en noob \n3. Var inte snorre på spelet")
 
-    input()
-    rensa()
-    
-  else:
-    print("Välj ett giltigt nummer")
 
+
+
+def skid(monster, spelare, namn):
+  while spelare.hp > 0:
+    print("------------------------------------------------\n1 FORTSÄTT RESAN --- 2 RYGGSÄCK --- 3 REGELBOKEN\n------------------------------------------------")
+    svar = input("vad vill du göra?")
+    if svar == "1": 
+      print("1 SHOPPEN --- 2 LÄGRET --- 3 ")
+      svar = input("Var vill du gå?")
+      if svar == 2:
+        strid(monster[0], spelare, namn)
+    elif svar == "2": 
+      print(f"DIN RYGGSÄCK:\br{spelare.ryggsäck}")
+      print(f"MYNT:{spelare.pengar}")
+    elif svar == "3":
+      print("--- REGLER OCH INSTRUKTIONER ---")
+      print("\n1. Klicka enter för att forstätta dialog/funktioner \n \n2. Tjäna mynt för ny utrustning \n \n3. Var inte snorre på spelet")
+      input()
+      rensa()
+      
+    else:
+      print("Välj ett giltigt nummer")
+# -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def rensa():
   os.system('cls' if os.name == 'nt' else 'clear')
-
-
-
-
-
-
-
-
 
 
 
@@ -180,7 +204,7 @@ def main():
   rensa()
 
   # ALLA MONSTER:
-  leif = Monster("Leif", 20, 10, 0, "Vass", r''' 
+  Leif = Monster("Leif", 20, 20, 10, 0, "Vass", 50, 1, r''' 
           [\__/]  
          / +  + \
     ⁂--- \vWWWWv/---⁅
@@ -189,7 +213,7 @@ def main():
           ₼₼  ₼₼  
 ''')
 
-  rolf = Monster("Rolf", 30, 15, 3, "Trubbig", r'''
+  Rolf = Monster("Rolf", 30, 30, 15, 3, "Trubbig", 150, 1, r'''
          _◺⨽₩₩₩₩₩⨼◿_
         |           |
        /   ⩊⩊⩊ ⩊⩊⩊   \
@@ -199,8 +223,8 @@ def main():
        ₼₼₼₼———————₼₼₼₼  
 ''')
 
-  rune = Monster("Bettan", 60, 20, 3, "Vass", r'''
-               _..--+~ ----__
+  Rune = Monster("Rune", 60, 60, 20, 3, "Vass", 500, 1, r'''
+               _..--+~ -----_
            _-=~      ( .     )
         _-~     _.--=.\\´''```
       _~      _-       \\_\
@@ -215,12 +239,27 @@ def main():
   ~~~~ ~~ ~        ~~ ~~ ~~ ~~~~~ ~~~ ~~~  ~~ ~~ ~
       ~  ~~~~~  ~~         ~    ~~  ~~ ~~~ ~
 ''')
+
+  alla_monster = [Leif, Rolf, Rune]
+ 
+  # ALLA SPELARE (BARA EN):
+  spelare = Spelare(30, 30, 5, 0, 0, [])
+
+  # ALLA VAPEN 
+  svärd = Vapen("Svärd", 10, 1)
+  klubba = Vapen("Klubba", 12, 1)
+  båge = Vapen("Båge", 12, 1)
+
+  # ALLA FÖREMÅL
+  äpple = Föremål("Äpple", 5, 0)
+
+  strid(Leif, spelare, namn)
+  print("Du överlevde din första strid, men resan är inte över än")
+  input()
+  rensa()
+
+  skid(alla_monster, spelare, namn)
   
 
-  # ALLA SPELARE (BARA EN):
-  spelare = Spelare(30, 5, 0)
-  skid()
-  strid(leif, spelare, namn)
-  
 
 main()
